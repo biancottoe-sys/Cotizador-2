@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faroluz – Sistema de Cotizaciones | Lista 182 Junio 2026</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="loader-brand">FARO<span>LUZ</span></div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div class="loader-text">Iniciando sistema de cotizaciones</div>
+</div>
+
+<!-- APP ROOT -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <header id="topbar">
+    <div class="topbar-brand">
+      <div class="brand-logo-box">FL</div>
+      <div>
+        <div class="brand-name">FAROLUZ</div>
+        <div class="brand-sub">Sistema de Cotizaciones</div>
+      </div>
+    </div>
+
+    <div class="topbar-pill">
+      <span class="dot"></span>
+      <span id="lista-nombre">Lista N.º 182 – Junio 2026</span>
+    </div>
+
+    <div class="topbar-sep"></div>
+
+    <div class="autosave-indicator" id="autosave-status">
+      <div class="autosave-dot"></div>
+      <span>Guardado automático</span>
+    </div>
+
+    <button class="topbar-btn secondary" onclick="App.nuevaCotizacion()" title="Nueva cotización">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Nueva
+    </button>
+
+    <button class="topbar-btn secondary" onclick="App.showHistorial()" title="Historial">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Historial
+    </button>
+
+    <button class="topbar-btn secondary" onclick="App.showCargarExcel()" title="Cargar nueva lista de precios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      Cargar Lista
+    </button>
+  </header>
+
+  <!-- MAIN GRID -->
+  <main id="main">
+
+    <!-- PANEL IZQUIERDO: CATÁLOGO -->
+    <aside id="panel-catalogo" class="panel">
+
+      <div class="panel-header">
+        <div class="panel-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        </div>
+        <h2>Catálogo de Productos</h2>
+        <span class="items-badge" id="total-products-badge">0</span>
+      </div>
+
+      <!-- Quick tabs -->
+      <div class="quick-tabs">
+        <div class="quick-tab active" data-tab="todos" onclick="App.switchTab('todos', this)">Todos</div>
+        <div class="quick-tab" data-tab="recientes" onclick="App.switchTab('recientes', this)">Recientes</div>
+        <div class="quick-tab" data-tab="favoritos" onclick="App.switchTab('favoritos', this)">Favoritos</div>
+      </div>
+
+      <!-- Buscador -->
+      <div class="search-box">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Buscar por código o descripción…"
+            autocomplete="off"
+            spellcheck="false"
+            oninput="App.onSearch(this.value)"
+          >
+          <button id="search-clear" onclick="App.clearSearch()" title="Limpiar">✕</button>
+        </div>
+      </div>
+
+      <!-- Categoría -->
+      <div class="cat-filter">
+        <select id="cat-select" onchange="App.onCatFilter(this.value)">
+          <option value="">– Todas las categorías –</option>
+        </select>
+      </div>
+
+      <div class="search-count" id="search-count">Cargando productos…</div>
+
+      <!-- Lista de artículos -->
+      <div id="catalogo-list" class="panel-body" style="padding:0"></div>
+
+    </aside>
+
+    <!-- PANEL CENTRAL: COTIZACIÓN -->
+    <section id="panel-cotizacion" class="panel">
+
+      <!-- Datos del cliente -->
+      <div id="cliente-form">
+        <div class="cliente-header">
+          <h3>
+            <svg style="width:12px;height:12px;margin-right:5px;vertical-align:-1px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Datos del Cliente
+          </h3>
+          <div class="cot-num" id="cot-num-display">#0001</div>
+        </div>
+        <div class="cliente-grid">
+          <div class="form-group span2">
+            <label>Razón Social / Nombre</label>
+            <input type="text" id="cli-nombre" placeholder="Nombre del cliente o empresa" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group">
+            <label>CUIT</label>
+            <input type="text" id="cli-cuit" placeholder="20-00000000-0" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" id="cli-tel" placeholder="+54 11 0000-0000" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group span2">
+            <label>E-mail</label>
+            <input type="email" id="cli-email" placeholder="cliente@empresa.com" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group span2">
+            <label>Dirección</label>
+            <input type="text" id="cli-direccion" placeholder="Dirección completa" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group">
+            <label>Vendedor</label>
+            <input type="text" id="cli-vendedor" placeholder="Nombre del vendedor" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="cli-fecha" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group">
+            <label>Validez (días)</label>
+            <input type="number" id="cli-validez" value="15" min="1" max="90" oninput="App.onClienteChange()">
+          </div>
+          <div class="form-group">
+            <label>Condición IVA</label>
+            <select id="cli-cond-iva" onchange="App.onClienteChange()">
+              <option value="consumidor_final">Consumidor Final</option>
+              <option value="responsable_inscripto">Responsable Inscripto</option>
+              <option value="monotributista">Monotributista</option>
+              <option value="exento">Exento</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cotización actual -->
+      <div class="cotizacion-wrap">
+        <div class="cotizacion-toolbar">
+          <svg style="width:14px;height:14px;color:var(--verde-oscuro)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span>Artículos en cotización</span>
+          <span class="items-badge" id="items-count">0</span>
+          <button class="btn-sm btn-manual" onclick="App.showItemManualModal()" title="Agregar ítem especial que no está en el catálogo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Ítem manual
+          </button>
+          <button class="btn-sm danger" onclick="App.limpiarCotizacion()" title="Limpiar todo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Vaciar
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table id="cot-table">
+            <thead>
+              <tr>
+                <th style="width:52px" class="center">Img</th>
+                <th style="width:90px">Código</th>
+                <th>Descripción</th>
+                <th style="width:150px">Color / Terminación</th>
+                <th class="center" style="width:100px">Cantidad</th>
+                <th class="right" style="width:100px">P. Unit.</th>
+                <th class="center" style="width:70px">Dto %</th>
+                <th class="right" style="width:110px">Subtotal</th>
+                <th style="width:30px"></th>
+              </tr>
+            </thead>
+            <tbody id="cot-tbody">
+              <!-- Items generados por JS -->
+            </tbody>
+          </table>
+
+          <div id="empty-state" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M12 12h.01M12 16h.01"/>
+            </svg>
+            <h3>Cotización vacía</h3>
+            <p>Buscá y hacé clic en un artículo del catálogo para agregarlo a la cotización</p>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="observaciones-wrap">
+          <label>📝 Observaciones de la cotización</label>
+          <textarea id="obs-textarea" placeholder="Notas adicionales, aclaraciones, detalles especiales del pedido…" oninput="App.onClienteChange()"></textarea>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- PANEL DERECHO: RESUMEN -->
+    <aside id="panel-resumen" class="panel">
+
+      <div class="panel-header">
+        <div class="panel-header-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <h2>Resumen Comercial</h2>
+      </div>
+
+      <!-- Switches IVA -->
+      <div class="iva-switches">
+        <div class="switch-row">
+          <span class="switch-label">Precios incluyen IVA</span>
+          <label class="toggle">
+            <input type="checkbox" id="sw-precios-con-iva" onchange="App.recalcular()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="switch-row">
+          <span class="switch-label">Mostrar IVA discriminado</span>
+          <label class="toggle">
+            <input type="checkbox" id="sw-mostrar-iva" checked onchange="App.recalcular()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="switch-row">
+          <span class="switch-label">IVA al 10,5%</span>
+          <label class="toggle">
+            <input type="checkbox" id="sw-iva-reducido" onchange="App.recalcular()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Descuento global -->
+      <div class="descuento-global">
+        <label>Descuento Global</label>
+        <div class="desc-input-row">
+          <button class="desc-type-btn active" id="btn-desc-pct" onclick="App.setDescType('pct')">%</button>
+          <button class="desc-type-btn" id="btn-desc-monto" onclick="App.setDescType('monto')">$</button>
+          <input type="number" id="desc-global-input" value="0" min="0" step="0.5" placeholder="0" oninput="App.recalcular()">
+        </div>
+      </div>
+
+      <!-- Totales -->
+      <div class="totales">
+        <div class="total-row subtotal">
+          <span class="label">Subtotal bruto</span>
+          <span class="value" id="t-subtotal-bruto">$ 0,00</span>
+        </div>
+        <div class="total-row descuento" id="row-desc" style="display:none">
+          <span class="label" id="lbl-desc">Descuento (0%)</span>
+          <span class="value" id="t-descuento">– $ 0,00</span>
+        </div>
+        <div class="total-row neto">
+          <span class="label">Subtotal neto</span>
+          <span class="value" id="t-subtotal-neto">$ 0,00</span>
+        </div>
+        <div class="total-row iva-row" id="row-iva">
+          <span class="label" id="lbl-iva">IVA (21%)</span>
+          <span class="value" id="t-iva">$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- Total final -->
+      <div class="total-final-box">
+        <div class="total-final-label">TOTAL FINAL</div>
+        <div class="total-final-amount" id="t-total">$ 0,00</div>
+        <div class="total-final-iva" id="t-iva-info">Sin IVA discriminado</div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="acciones">
+        <button class="btn-generate" onclick="App.generarCotizacion()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          GENERAR COTIZACIÓN
+        </button>
+        <div class="btn-export-row">
+          <button class="btn-export" onclick="App.exportarPDF()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            Exportar PDF
+          </button>
+          <button class="btn-export" onclick="App.exportarExcel()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h18M3 14h18M10 3v18M6 3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6a3 3 0 013-3z"/></svg>
+            Exportar Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- Condiciones comerciales -->
+      <div class="condiciones">
+        <label>Condiciones Comerciales</label>
+        <textarea id="cond-textarea" oninput="App.onClienteChange()">• Validez de la oferta: 15 días.
+• Forma de pago: a convenir.
+• Entrega: stock inmediato sujeto a disponibilidad.
+• Precios expresados en pesos argentinos.
+• IVA según condición del cliente.</textarea>
+      </div>
+
+    </aside>
+
+  </main><!-- /#main -->
+</div><!-- /#app -->
+
+<!-- ── MODAL ÍTEM MANUAL ────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-item-manual">
+  <div class="modal modal-manual">
+    <div class="modal-header">
+      <svg style="width:18px;height:18px;color:var(--verde-oscuro)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      <h2>Agregar Ítem Manual</h2>
+      <button class="modal-close" onclick="App.closeModal('modal-item-manual')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="manual-hint">Para productos especiales, trabajos a medida o artículos fuera de lista. Solo aplica a esta cotización.</p>
+      <div class="manual-form">
+        <div class="mf-row">
+          <div class="form-group">
+            <label>Código <span class="mf-optional">(opcional)</span></label>
+            <input type="text" id="manual-codigo" placeholder="Ej: ESPEC-001"
+              onkeydown="if(event.key==='Enter') document.getElementById('manual-desc').focus()">
+          </div>
+          <div class="form-group mf-grow">
+            <label>Descripción <span class="mf-req">*</span></label>
+            <input type="text" id="manual-desc" placeholder="Nombre del producto, trabajo o recargo…"
+              onkeydown="if(event.key==='Enter') document.getElementById('manual-precio').focus()">
+          </div>
+        </div>
+        <div class="mf-row">
+          <div class="form-group">
+            <label>Precio unitario</label>
+            <input type="number" id="manual-precio" placeholder="0,00" min="0" step="0.01"
+              onkeydown="if(event.key==='Enter') document.getElementById('manual-qty').focus()">
+          </div>
+          <div class="form-group">
+            <label>Cantidad</label>
+            <input type="number" id="manual-qty" value="1" min="1" step="1"
+              onkeydown="if(event.key==='Enter') document.getElementById('manual-color').focus()">
+          </div>
+          <div class="form-group mf-grow">
+            <label>Color / Terminación <span class="mf-optional">(opcional)</span></label>
+            <input type="text" id="manual-color" placeholder="Ej: Negro mate"
+              onkeydown="if(event.key==='Enter') App.agregarItemManual()">
+          </div>
+        </div>
+        <div class="mf-actions">
+          <button class="mf-btn-cancel" onclick="App.closeModal('modal-item-manual')">Cancelar</button>
+          <button class="mf-btn-add" onclick="App.agregarItemManual()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Agregar a cotización
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL HISTORIAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-historial">
+  <div class="modal">
+    <div class="modal-header">
+      <svg style="width:20px;height:20px;color:var(--verde-oscuro)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <h2>Historial de Cotizaciones</h2>
+      <button class="modal-close" onclick="App.closeModal('modal-historial')">✕</button>
+    </div>
+    <div class="modal-body" id="hist-body">
+      <p style="color:var(--gris-texto);text-align:center;padding:40px">Sin cotizaciones guardadas aún.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL CARGAR EXCEL ──────────────────────────────────── -->
+<div class="modal-overlay" id="modal-excel">
+  <div class="modal">
+    <div class="modal-header">
+      <svg style="width:20px;height:20px;color:var(--verde-oscuro)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      <h2>Cargar Nueva Lista de Precios</h2>
+      <button class="modal-close" onclick="App.closeModal('modal-excel')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="drop-zone" id="drop-zone"
+        ondragover="event.preventDefault(); this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="App.onFileDrop(event)"
+        onclick="document.getElementById('file-input').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <h3>Arrastrá el archivo Excel aquí</h3>
+        <p>O hacé clic para seleccionar<br><strong>Lista de precios Faroluz (.xlsx)</strong></p>
+      </div>
+      <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" onchange="App.onFileSelect(event)">
+      <div id="excel-status" style="margin-top:12px;text-align:center;font-size:13px;color:var(--gris-texto)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ─────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── LIBRERÍAS ───────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+
+<!-- ── DATOS DE PRODUCTOS ──────────────────────────────────── -->
+<script src="modules/utils.js"></script>
+<script src="data/local-images.js"></script>
+<script src="data/images.js"></script>
+<script src="data/products.js"></script>
+
+<!-- ── APP ────────────────────────────────────────────────── -->
+<script src="modules/catalog.js"></script>
+<script src="modules/quotation.js"></script>
+<script src="modules/pdf-generator.js"></script>
+<script src="modules/excel-generator.js"></script>
+<script src="modules/history.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
