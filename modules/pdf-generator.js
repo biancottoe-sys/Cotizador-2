@@ -88,8 +88,7 @@ const PDFGenerator = (() => {
       body: tableBody,
       margin: { left: ML, right: MR },
       headStyles: { fillColor:NEGRO, textColor:BLANCO, fontStyle:'bold', fontSize:7.5, cellPadding:{top:4,bottom:4,left:3,right:2} },
-      bodyStyles: { fontSize:7.5, textColor:NEGRO, cellPadding:{top:3,bottom:3,left:3,right:2} },
-      alternateRowStyles: { fillColor:[248,251,249] },
+      bodyStyles: { fillColor:BLANCO, fontSize:7.5, textColor:NEGRO, cellPadding:{top:3,bottom:3,left:3,right:2} },
       columnStyles: {
         0: { cellWidth: 22, textColor:VERDE_OSC },   // Codigo
         1: { cellWidth: 13, halign:'center', cellPadding:{top:2,bottom:2,left:2,right:2} }, // Foto
@@ -101,9 +100,8 @@ const PDFGenerator = (() => {
         7: { cellWidth: 26, halign:'right' },        // Subtotal
       },
       didParseCell: (hook) => {
-        // Resaltar celdas de color con valor
-        if (hook.column.index===3 && hook.section==='body' && hook.cell.raw?.content) {
-          hook.cell.styles.fillColor = VERDE_SUAVE;
+        if (hook.section === 'body') {
+          hook.cell.styles.fillColor = BLANCO;
         }
       },
       didDrawCell: (hook) => {
@@ -111,10 +109,12 @@ const PDFGenerator = (() => {
         const img = hook.cell.raw && hook.cell.raw.rawImage;
         if (!img) return;
         try {
-          const size = Math.max(5, Math.min(8, hook.cell.height - 3, hook.cell.width - 3));
-          const x = hook.cell.x + (hook.cell.width - size) / 2;
-          const yImg = hook.cell.y + (hook.cell.height - size) / 2;
-          doc.addImage(img, _imageType(img), x, yImg, size, size, undefined, 'FAST');
+          const boxW = Math.max(5, Math.min(10, hook.cell.width - 3));
+          const boxH = Math.max(5, Math.min(10, hook.cell.height - 3));
+          const fit = _fitImage(img, boxW, boxH);
+          const x = hook.cell.x + (hook.cell.width - fit.w) / 2;
+          const yImg = hook.cell.y + (hook.cell.height - fit.h) / 2;
+          doc.addImage(img, _imageType(img), x, yImg, fit.w, fit.h, undefined, 'FAST');
         } catch(_) {}
       },
       didDrawPage: (hook) => {
@@ -181,6 +181,51 @@ const PDFGenerator = (() => {
     toast('PDF generado correctamente','success');
   }
 
+
+
+  function _fitImage(src, maxW, maxH) {
+    const dim = _imageDimensions(src);
+    if (!dim || !dim.w || !dim.h) return { w: maxW, h: maxH };
+    const scale = Math.min(maxW / dim.w, maxH / dim.h);
+    return { w: dim.w * scale, h: dim.h * scale };
+  }
+
+  function _imageDimensions(src) {
+    try {
+      const comma = (src || '').indexOf(',');
+      if (comma < 0) return null;
+      const bin = atob(src.slice(comma + 1));
+      if (/^data:image\/png/i.test(src)) {
+        return {
+          w: _readU32(bin, 16),
+          h: _readU32(bin, 20),
+        };
+      }
+      if (/^data:image\/jpe?g/i.test(src)) {
+        let i = 2;
+        while (i < bin.length) {
+          if (bin.charCodeAt(i) !== 0xFF) { i++; continue; }
+          const marker = bin.charCodeAt(i + 1);
+          const len = (bin.charCodeAt(i + 2) << 8) + bin.charCodeAt(i + 3);
+          if (marker >= 0xC0 && marker <= 0xC3) {
+            return {
+              h: (bin.charCodeAt(i + 5) << 8) + bin.charCodeAt(i + 6),
+              w: (bin.charCodeAt(i + 7) << 8) + bin.charCodeAt(i + 8),
+            };
+          }
+          i += 2 + len;
+        }
+      }
+    } catch(_) {}
+    return null;
+  }
+
+  function _readU32(bin, offset) {
+    return ((bin.charCodeAt(offset) << 24) >>> 0) +
+      (bin.charCodeAt(offset + 1) << 16) +
+      (bin.charCodeAt(offset + 2) << 8) +
+      bin.charCodeAt(offset + 3);
+  }
 
   function _getProductImage(item, imageCache) {
     try {
