@@ -13,8 +13,7 @@ const App = (() => {
     History.init();
 
     // Número de cotización
-    _cotNumero = History.getNextNumber();
-    document.getElementById('cot-num-display').textContent = `#${_cotNumero}`;
+    _asignarNumeroCotizacion(History.getNextNumber());
 
     // Fecha de hoy
     const fechaInput = document.getElementById('cli-fecha');
@@ -76,9 +75,9 @@ const App = (() => {
   // ── Recalcular totales ─────────────────────────────────────
   function recalcular() {
     const descGlobal   = parseFloat(document.getElementById('desc-global-input')?.value) || 0;
-    const mostrarIva   = document.getElementById('sw-mostrar-iva')?.checked ?? true;
-    const preciosConIva = document.getElementById('sw-precios-con-iva')?.checked ?? false;
-    const ivaReducido  = document.getElementById('sw-iva-reducido')?.checked ?? false;
+    const mostrarIva   = !!document.getElementById('sw-mostrar-iva')?.checked;
+    const preciosConIva = !!document.getElementById('sw-precios-con-iva')?.checked;
+    const ivaReducido  = !!document.getElementById('sw-iva-reducido')?.checked;
 
     const t = Quotation.calcTotals(descGlobal, _descType, mostrarIva, preciosConIva, ivaReducido);
 
@@ -148,10 +147,16 @@ const App = (() => {
     return {
       descGlobal:   parseFloat(_getVal('desc-global-input')) || 0,
       descType:     _descType,
-      mostrarIva:   document.getElementById('sw-mostrar-iva')?.checked ?? true,
-      preciosConIva: document.getElementById('sw-precios-con-iva')?.checked ?? false,
-      ivaReducido:  document.getElementById('sw-iva-reducido')?.checked ?? false,
+      mostrarIva:   !!document.getElementById('sw-mostrar-iva')?.checked,
+      preciosConIva: !!document.getElementById('sw-precios-con-iva')?.checked,
+      ivaReducido:  !!document.getElementById('sw-iva-reducido')?.checked,
     };
+  }
+
+  function _asignarNumeroCotizacion(numero) {
+    _cotNumero = numero;
+    const display = document.getElementById('cot-num-display');
+    if (display) display.textContent = `#${_cotNumero}`;
   }
 
   // ── Autoguardado ───────────────────────────────────────────
@@ -208,8 +213,7 @@ const App = (() => {
       if (!confirm('¿Iniciar una nueva cotización? La actual se guardará en el historial.')) return;
       _doAutoguardar();
     }
-    _cotNumero = History.getNextNumber();
-    document.getElementById('cot-num-display').textContent = `#${_cotNumero}`;
+    _asignarNumeroCotizacion(History.getNextNumber());
     Quotation.clear();
     // Limpiar cliente
     ['cli-nombre','cli-cuit','cli-tel','cli-email','cli-direccion','cli-vendedor'].forEach(id => {
@@ -235,7 +239,6 @@ const App = (() => {
   // ── Generar cotización (guardar + PDF) ─────────────────────
   function generarCotizacion() {
     if (Quotation.isEmpty()) { toast('Agregá artículos antes de generar la cotización', 'warning'); return; }
-    _doAutoguardar();
     exportarPDF();
   }
 
@@ -303,6 +306,8 @@ const App = (() => {
 
   async function exportarPDF() {
     if (Quotation.isEmpty()) { toast('La cotización está vacía', 'warning'); return; }
+    _asignarNumeroCotizacion(History.getNextNumber());
+    _doAutoguardar();
     toast('Preparando PDF con imágenes… (puede tardar unos segundos)', 'info');
     const cfg   = _getConfig();
     const t     = Quotation.calcTotals(cfg.descGlobal, cfg.descType, cfg.mostrarIva, cfg.preciosConIva, cfg.ivaReducido);
@@ -398,8 +403,7 @@ const App = (() => {
     closeModal('modal-historial');
     // Asignar nuevo número
     const newNum = History.getNextNumber();
-    _cotNumero = newNum;
-    document.getElementById('cot-num-display').textContent = `#${_cotNumero}`;
+    _asignarNumeroCotizacion(newNum);
     toast(`Cotización duplicada como #${newNum}`, 'success');
   }
 
@@ -468,7 +472,7 @@ const App = (() => {
         }
 
         // Detectar producto: primer campo es código (contiene letras o /)
-        const col0 = String(row[0] ?? '').trim();
+        const col0 = String(row[0] || '').trim();
         if (!col0 || col0.length < 2) return;
         if (['Artículo','Articulo','Foto','Descripción'].includes(col0)) return;
 

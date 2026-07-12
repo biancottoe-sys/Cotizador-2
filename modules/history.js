@@ -34,10 +34,14 @@ const History = (() => {
   function getByNumero(numero) { return _records.find(r => r.numero === numero) || null; }
 
   function getNextNumber() {
-    if (_records.length === 0) return '0001';
-    const nums = _records.map(r => parseInt(r.numero, 10)).filter(n => !isNaN(n));
-    const max  = nums.length > 0 ? Math.max(...nums) : 0;
-    return String(max + 1).padStart(4, '0');
+    const now = new Date();
+    const min = 150;
+    const max = 500;
+    const span = max - min + 1;
+    const millisDelDia = now.getHours()*3600000 + now.getMinutes()*60000 + now.getSeconds()*1000 + now.getMilliseconds();
+    const perf = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const extra = Math.floor(perf * 1000);
+    return String(min + ((millisDelDia + extra) % span));
   }
 
   function _persist() {
@@ -79,8 +83,8 @@ const History = (() => {
       </div>`).join('');
   }
 
-  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function ea(s)  { return String(s??'').replace(/'/g,"\\'"); }
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function ea(s)  { return String(s || '').replace(/'/g,"\\'"); }
 
   return { init, save, remove, getAll, getByNumero, getNextNumber, renderModal };
 })();

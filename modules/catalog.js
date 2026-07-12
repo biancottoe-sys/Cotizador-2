@@ -68,7 +68,7 @@ const Catalog = (() => {
     const url = (typeof getImagenURL === 'function') ? getImagenURL(product.codigo, product.categoria) : null;
     const fallback = '<div class="prod-thumb-sm-placeholder"><span>'+esc(product.codigo)+'</span></div>';
     if (url) {
-      return '<img class="prod-thumb-sm" src="'+url+'" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+      return '<img class="prod-thumb-sm thumb-preview-trigger" src="'+url+'" alt="" loading="lazy" title="Ver foto" onclick="ImagePreview.show(this.src,event)" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
            + '<div class="prod-thumb-sm-placeholder" style="display:none"><span>'+esc(product.codigo)+'</span></div>';
     }
     return fallback;
@@ -120,8 +120,8 @@ const Catalog = (() => {
   function findByCode(codigo) { return _products.find(p => p.codigo.toLowerCase()===codigo.toLowerCase())||null; }
   function getAll() { return _products; }
 
-  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function ea(s)  { return String(s??'').replace(/'/g,"\\'"); }
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function ea(s)  { return String(s || '').replace(/'/g,"\\'"); }
 
   return { init, filter, renderList, findByCode, getAll, toggleFavorite, addReciente };
 })();

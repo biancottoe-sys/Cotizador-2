@@ -12,7 +12,7 @@
 
 <!-- LOADING OVERLAY -->
 <div id="loading-overlay">
-  <div class="loader-brand">FARO<span>LUZ</span></div>
+  <img class="loader-brand-img" src="assets/faroluz-marca-horizontal.png" alt="Faroluz Sistema de Cotizaciones">
   <div class="loader-bar"><div class="loader-bar-fill"></div></div>
   <div class="loader-text">Iniciando sistema de cotizaciones</div>
 </div>
@@ -23,11 +23,7 @@
   <!-- TOPBAR -->
   <header id="topbar">
     <div class="topbar-brand">
-      <div class="brand-logo-box">FL</div>
-      <div>
-        <div class="brand-name">FAROLUZ</div>
-        <div class="brand-sub">Sistema de Cotizaciones</div>
-      </div>
+      <img class="brand-full-logo" src="assets/faroluz-marca-horizontal.png" alt="Faroluz Sistema de Cotizaciones">
     </div>
 
     <div class="topbar-pill">
@@ -41,6 +37,11 @@
       <div class="autosave-dot"></div>
       <span>Guardado automático</span>
     </div>
+
+    <a class="topbar-btn secondary" href="catalogo/Faroluz_2026.pdf" target="_blank" rel="noopener" title="Ver catalogo Faroluz 2026">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5z"/></svg>
+      Ver catalogo 2026
+    </a>
 
     <button class="topbar-btn secondary" onclick="App.nuevaCotizacion()" title="Nueva cotización">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -213,7 +214,7 @@
 
         <!-- Observaciones -->
         <div class="observaciones-wrap">
-          <label>📝 Observaciones de la cotización</label>
+          <label>Observaciones de la cotización</label>
           <textarea id="obs-textarea" placeholder="Notas adicionales, aclaraciones, detalles especiales del pedido…" oninput="App.onClienteChange()"></textarea>
         </div>
       </div>
@@ -433,6 +434,7 @@
 <!-- ── APP ────────────────────────────────────────────────── -->
 <script src="modules/catalog.js"></script>
 <script src="modules/quotation.js"></script>
+<script src="modules/image-preview.js"></script>
 <script src="modules/pdf-generator.js"></script>
 <script src="modules/excel-generator.js"></script>
 <script src="modules/history.js"></script>
@@ -440,3 +442,4 @@
 
 </body>
 </html>
+

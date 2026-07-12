@@ -14,7 +14,7 @@ const Quotation = (() => {
     const url = (typeof getImagenURL === 'function') ? getImagenURL(item.codigo, item.categoria) : null;
     const placeholder = '<div class="prod-thumb-code">'+esc(item.codigo)+'</div>';
     if (url) {
-      return '<img class="prod-thumb" src="'+url+'" alt="" loading="lazy" style="width:44px;height:44px;border-radius:6px;border:1.5px solid var(--gris-borde);object-fit:contain;display:block;background:#fff"'
+      return '<img class="prod-thumb thumb-preview-trigger" src="'+url+'" alt="" loading="lazy" title="Ver foto" onclick="ImagePreview.show(this.src,event)" style="width:44px;height:44px;border-radius:6px;border:1.5px solid var(--gris-borde);object-fit:contain;display:block;background:#fff"'
            + ' onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
            + '<div class="prod-thumb-code" style="display:none">'+esc(item.codigo)+'</div>';
     }
@@ -190,11 +190,11 @@ const Quotation = (() => {
   function isEmpty()   { return _items.length === 0; }
   function loadFromHistory(items) {
     // Al cargar del historial, asignar _id si no tienen
-    _items = items.map(i => ({ color:'', ...i, _id: i._id ?? _nextId() }));
+    _items = items.map(i => ({ color:'', ...i, _id: i._id || _nextId() }));
     renderTable(); App.recalcular();
   }
 
-  function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   return { addItem, addManualItem, removeItem, setQty, incQty, decQty, setDescItem, setColor, clear, renderTable, calcTotals, getItems, isEmpty, loadFromHistory };
 })();
