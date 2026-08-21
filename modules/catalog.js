@@ -84,7 +84,7 @@ const Catalog = (() => {
       return;
     }
 
-    const toShow = items.slice(0, 200);
+    const toShow = items;
     const terms  = _normalize(_searchTerm).split(/\s+/).filter(Boolean);
 
     const html = toShow.map(p => {
@@ -99,10 +99,7 @@ const Catalog = (() => {
         + '</div>';
     }).join('');
 
-    const extra = items.length > 200
-      ? '<div style="padding:10px 14px;font-size:11px;color:var(--gris-texto);text-align:center">Mostrando 200 de '+items.length+'. Refiná la búsqueda.</div>'
-      : '';
-    container.innerHTML = html + extra;
+    container.innerHTML = html;
   }
 
   function _highlight(text, terms) {

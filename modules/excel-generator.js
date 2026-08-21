@@ -147,7 +147,7 @@ const ExcelGenerator = (() => {
 
     ws.mergeCells(r, 6, r, NCOLS);
     const listaCell    = ws.getCell(r, 6);
-    listaCell.value    = 'Lista N.º 182 – Junio 2026';
+    listaCell.value    = 'Lista N.º 183 – Agosto 2026';
     listaCell.fill     = _fill(C.VERDE_OSC);
     listaCell.font     = _font(7.5, false, 'FFCCE8D8');
     listaCell.alignment = _align('center', 'middle');

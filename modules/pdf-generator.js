@@ -31,7 +31,7 @@ const PDFGenerator = (() => {
     doc.setFontSize(18);
     doc.text('#'+data.numero, PW-MR-26, 24, {align:'center'});
     doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...GRIS_CLARO);
-    doc.text('Lista N. 182 - Junio 2026', PW-MR-26, 30, {align:'center'});
+    doc.text('Lista N. 183 - Agosto 2026', PW-MR-26, 30, {align:'center'});
 
     // CLIENTE
     let y=50;
@@ -254,4 +254,3 @@ const PDFGenerator = (() => {
 
   return { generate };
 })();
-
